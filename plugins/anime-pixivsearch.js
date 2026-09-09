@@ -6,7 +6,7 @@ const {
 const axios = require("axios");
 
 module.exports = {
-    command: ["pixivsearch", "pixivs], 
+    command: ["pixivsearch", "pixivs"], 
     category: "anime",
     noPrefix: true,
     call: async (conn, m, { usedPrefix, command, text, args }) => {  
