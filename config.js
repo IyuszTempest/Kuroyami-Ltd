@@ -32,11 +32,11 @@ global.namech = "✨ kuroyami Ltd."; // Nama Saluran kamu
 // --- [ Settings Tampilan & Media ] ---
 global.wm = "© Kuroyami Ltd. by IyuszTempest";
 global.imgall =
-  "https://i.pinimg.com/736x/75/5a/17/755a17ad3b412f13ccdc84d3c74e416f.jpg";
+  "https://i.pinimg.com/1200x/0e/d8/98/0ed898f1ddea467ba875517873c2aaa9.jpg";
 global.imgmenu =
-  "https://i.pinimg.com/736x/53/c1/df/53c1dfd3061177e10ee80d9b3479ff4c.jpg";
+  "https://i.pinimg.com/1200x/41/79/ce/4179cee3eff1c950dab4dc590d5a8988.jpg";
 global.imgreply =
-  "https://i.pinimg.com/736x/db/af/85/dbaf8541a2bbc78bf1c84326b27e611f.jpg";
+  "https://i.pinimg.com/1200x/29/40/c4/2940c4ad3b07dcbb9adeb491d91f4fb2.jpg";
 global.imgpagi =
   "https://i.pinimg.com/736x/4e/85/b8/4e85b8660c54563b9b0ecfc591e227da.jpg";
 global.imgsiang =
