@@ -6,29 +6,40 @@ const {
 const axios = require("axios");
 
 module.exports = {
-    command: ["pixivsearch", "pixivs"], 
+    command: ["pixivsearch", "pixivs"],
     category: "anime",
     noPrefix: true,
     call: async (conn, m, { usedPrefix, command, text, args }) => {  
-        if (command === 'getpixiv' || (m.message?.interactiveResponseMessage?.nativeFlowResponseMessage)) {
+        let nativeFlow = m.message?.interactiveResponseMessage?.nativeFlowResponseMessage;
+
+        if (command === "getpixiv" || nativeFlow) {
             let imgUrl = "";
 
-            if (m.message?.interactiveResponseMessage?.nativeFlowResponseMessage) {
-                let params = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson);
-                imgUrl = params.id.split(" ")[1]; 
-            } else {
-                imgUrl = args[0];
+            if (nativeFlow) {
+                try {
+                    let params = JSON.parse(nativeFlow.paramsJson);
+                    let rawId = params.id || "";
+                    imgUrl = rawId.split(" ").slice(1).join(" ");
+                } catch (e) {
+                    console.error("Error parsing nativeFlow:", e);
+                }
+            }
+
+            if (!imgUrl && args.length > 0) {
+                imgUrl = args.join(" ");
             }
 
             if (!imgUrl) return m.reply("❌ Gagal mengambil detail gambar.");
             
+            await conn.sendMessage(m.chat, { react: { text: "🌸", key: m.key } });
+
             return await conn.sendMessage(m.chat, { 
                 image: { url: imgUrl }, 
                 caption: "🌸 *Pixiv Image Detail*" 
             }, { quoted: m });
         }
 
-        if (!text) return m.reply(`Mau cari apa di Pixiv?\nContoh: *${usedPrefix}pixiv Furina*`);
+        if (!text) return m.reply(`Mau cari apa di Pixiv?\nContoh: *${usedPrefix}pixivsearch Furina*`);
 
         await conn.sendMessage(m.chat, { react: { text: "🎨", key: m.key } });
 
@@ -54,8 +65,12 @@ module.exports = {
                 sections: [{ title: "Pilih ilustrasi:", rows: rows }]
             };
 
+            let previewUrl = results[0].image.includes("img=") 
+                ? decodeURIComponent(results[0].image.split("img=")[1]) 
+                : results[0].image;
+
             const headerMedia = await prepareWAMessageMedia(
-                { image: { url: results[0].image.includes("img=") ? decodeURIComponent(results[0].image.split("img=")[1]) : results[0].image } },
+                { image: { url: previewUrl } },
                 { upload: conn.waUploadToServer }
             );
 
@@ -63,9 +78,17 @@ module.exports = {
                 viewOnceMessage: {
                     message: {
                         interactiveMessage: proto.Message.InteractiveMessage.create({
-                            header: proto.Message.InteractiveMessage.Header.create({ title: "⛩️ Pixiv Search", hasMediaAttachment: true, ...headerMedia }),
-                            body: proto.Message.InteractiveMessage.Body.create({ text: `Ditemukan ${results.length} hasil untuk: *${text}*` }),
-                            footer: proto.Message.InteractiveMessage.Footer.create({ text: global.wm }),
+                            header: proto.Message.InteractiveMessage.Header.create({ 
+                                title: "⛩️ Pixiv Search", 
+                                hasMediaAttachment: true, 
+                                ...headerMedia 
+                            }),
+                            body: proto.Message.InteractiveMessage.Body.create({ 
+                                text: `Ditemukan ${results.length} hasil untuk: *${text}*` 
+                            }),
+                            footer: proto.Message.InteractiveMessage.Footer.create({ 
+                                text: global.wm || "Kuroyami Bot" 
+                            }),
                             nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
                                 buttons: [{ name: "single_select", buttonParamsJson: JSON.stringify(listMessage) }],
                             }),
@@ -74,8 +97,20 @@ module.exports = {
                 },
             }, { quoted: m });
 
-            await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id, additionalNodes: [{ tag: "biz", attrs: {}, content: [{ tag: "interactive", attrs: { type: "native_flow", v: "1" }, content: [{ tag: "native_flow", attrs: { v: "9", name: "mixed" } }] }] }] });
+            await conn.relayMessage(m.chat, msg.message, { 
+                messageId: msg.key.id, 
+                additionalNodes: [{ 
+                    tag: "biz", 
+                    attrs: {}, 
+                    content: [{ 
+                        tag: "interactive", 
+                        attrs: { type: "native_flow", v: "1" }, 
+                        content: [{ tag: "native_flow", attrs: { v: "9", name: "mixed" } }] 
+                    }] 
+                }] 
+            });
         } catch (e) {
+            console.error(e);
             m.reply(`⚠️ Error: ${e.message}`);
         }
     },
