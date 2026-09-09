@@ -36,6 +36,11 @@ module.exports = {
 
         const rows = [
           {
+            title: "💳 Topup Saldo Rp1.000",
+            description: "Pindahkan uang utama ke saldo DANA",
+            id: `${_p}topup 1000`,
+          },
+          {
             title: "💳 Topup Saldo Rp10.000",
             description: "Pindahkan uang utama ke saldo DANA",
             id: `${_p}topup 10000`,
@@ -71,9 +76,9 @@ module.exports = {
             id: `${_p}tarik 10000000`,
           },
           {
-            title: "🎁 Buat Daget Rp500.000 (1 Kuota)",
+            title: "🎁 Buat Daget Rp500.000 (3 Kuota)",
             description: "Bagi-bagi saldo DANA Kaget instan",
-            id: `${_p}daget 500000 1`,
+            id: `${_p}daget 500000 3`,
           },
           {
             title: "🎁 Buat Daget Rp50.000 (5 Kuota)",
@@ -117,7 +122,7 @@ module.exports = {
                     title: "📱 DANA DIGITAL WALLET 📱",
                     hasMediaAttachment: true,
                     ...(await prepareWAMessageMedia(
-                      { image: { url: global.imgall } },
+                      { image: { url: "https://i.pinimg.com/736x/f2/7d/e0/f27de0e4a01ba9dfe8607ac03a4f7aae.jpg" } },
                       { upload: conn.waUploadToServer },
                     )),
                   }),
@@ -269,7 +274,7 @@ module.exports = {
           );
         if (daget.claimed.length >= daget.kuota)
           return m.reply(
-            "> Yahh! Telat Onii-chan, saldo DANA Kaget ini sudah habis diserbu orang lain. 🥺",
+            "> Yahh! Telat, saldo DANA Kaget ini sudah habis diserbu orang lain. 🥺",
           );
         if (daget.claimed.includes(m.sender))
           return m.reply(
