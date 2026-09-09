@@ -48,7 +48,7 @@ module.exports = {
 
         const topVideoThumb = video.thumbnail || global.imgall;
 
-        detailContent += `> 🎥 *Judul:* ${video.title}\n`;
+        detailContent = `> 🎥 *Judul:* ${video.title}\n`;
         detailContent += `> 👤 *Channel:* ${video.author?.name || "Unknown"}\n`;
         detailContent += `> ⏱️ *Durasi:* ${video.timestamp || "N/A"}\n`;
         detailContent += `> 🔗 *Link:* ${video.url || videoUrl}\n\n`;
