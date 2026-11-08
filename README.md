@@ -8,7 +8,6 @@
 [![Node.js](https://img.shields.io/badge/Node.js-24+-indigo?style=for-the-badge&logo=nodedotjs)](https://nodejs.org)
 [![Library](https://img.shields.io/badge/Library-neodevxsadmd/baileys-indigo?style=for-the-badge&logo=whatsapp)](#)
 <img src="https://img.shields.io/badge/Dev-IyuszTempest-indigo.svg?style=for-the-badge" alt="Developer">
-<img src="https://img.shields.io/badge/license-MIT-indigo.svg?style=for-the-badge" alt="License MIT">
 
 </div>
 
