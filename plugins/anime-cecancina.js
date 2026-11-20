@@ -27,7 +27,7 @@ module.exports = {
         { quoted: m },
       );
     } catch (err) {
-      console.error("Theresav Random Loli Error:", err);
+      console.error("Theresav Random Error:", err);
       await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
       m.reply(
         `❌ *Gagal mengambil gambar:* ${err.message || "Terjadi masalah pada API."}`,
