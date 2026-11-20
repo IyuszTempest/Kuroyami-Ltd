@@ -25,7 +25,6 @@ module.exports = {
         );
       }
 
-      // Kumpulkan command dari semua plugin di kategori ini
       const plugins = global.plugins || {};
       const found = new Set();
 
