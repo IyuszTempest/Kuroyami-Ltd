@@ -1,8 +1,3 @@
-/**
- * Plugin: Set Bot Thumbnail 🖼️
- * Fitur: Mengganti thumbnail bot secara permanen ke config.js
- */
-
 const fs = require('fs');
 const FormData = require('form-data');
 const axios = require('axios');
@@ -21,7 +16,7 @@ async function uploadToCDN(buffer) {
 }
 
 module.exports = {
-    command: ['setthumb'],
+    command: ['setthumbmenu'],
     category: 'owner',
     owner: true,
     noPrefix: true,
@@ -40,32 +35,27 @@ module.exports = {
             let img = await q.download();
             if (!img) throw 'Gagal mengunduh gambar.';
 
-            // 1. Simpan file fisik sebagai cadangan
             fs.writeFileSync('./thumbnail.jpg', img);
 
-            // 2. Upload ke CDN untuk mendapatkan URL untuk global.imgall
             let url = await uploadToCDN(img);
             if (!url) throw 'Gagal mendapatkan URL gambar dari CDN.';
 
-            // 3. Update config.js secara otomatis
             let configPath = './config.js';
             if (fs.existsSync(configPath)) {
                 let configContent = fs.readFileSync(configPath, 'utf-8');
                 
-                // Mencari dan mengganti nilai global.imgall
                 const regex = /global\.imgall\s*=\s*['"][^'"]*['"]/g;
                 if (regex.test(configContent)) {
-                    const newConfig = configContent.replace(regex, `global.imgall = '${url}'`);
+                    const newConfig = configContent.replace(regex, `global.imgmenu = '${url}'`);
                     fs.writeFileSync(configPath, newConfig);
                 } else {
-                    // Jika tidak ditemukan, tambahkan di baris baru
-                    fs.appendFileSync(configPath, `\nglobal.imgall = '${url}'`);
+                    fs.appendFileSync(configPath, `\nglobal.imgmenu = '${url}'`);
                 }
             }
 
             await conn.sendMessage(m.chat, {
                 image: img,
-                caption: `✅ *Thumbnail Berhasil Diperbarui*\n\n🖼️ *URL Baru:* ${url}\n\n_Catatan: Jika belum berubah, silakan restart bot di panel._`
+                caption: `✅ *Thumbnail Menu Berhasil Diperbarui*\n\n🖼️ *URL Baru:* ${url}\n\n_Catatan: Jika belum berubah, silakan restart bot di panel._`
             }, { quoted: m });
 
             await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
