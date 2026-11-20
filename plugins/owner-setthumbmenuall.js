@@ -16,7 +16,7 @@ async function uploadToCDN(buffer) {
 }
 
 module.exports = {
-    command: ['setthumbmenu'],
+    command: ['setthumbmenuall'],
     category: 'owner',
     owner: true,
     noPrefix: true,
