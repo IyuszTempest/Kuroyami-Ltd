@@ -53,6 +53,7 @@ global.social = {
   youtube: "https://youtube.com/@natariusu_id",
   website: "https://iyusztempest.web.id",
   github: "https://github.com/iyusztempest",
+  tiktok: "https://tiktok.com/@natariusu.id",
 };
 
 //===== Jangan Diubah ======
