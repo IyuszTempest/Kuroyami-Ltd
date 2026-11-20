@@ -1,6 +1,6 @@
 module.exports = {
     command: ['s', 'stiker', 'sticker'],
-    category: 'tools',
+    category: 'sticker',
     noPrefix: true, 
     call: async (conn, m, { isOwner }) => {
         let q = m.quoted ? m.quoted : m
