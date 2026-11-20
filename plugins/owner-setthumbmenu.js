@@ -44,7 +44,7 @@ module.exports = {
             if (fs.existsSync(configPath)) {
                 let configContent = fs.readFileSync(configPath, 'utf-8');
                 
-                const regex = /global\.imgall\s*=\s*['"][^'"]*['"]/g;
+                const regex = /global\.imgmenu\s*=\s*['"][^'"]*['"]/g;
                 if (regex.test(configContent)) {
                     const newConfig = configContent.replace(regex, `global.imgmenu = '${url}'`);
                     fs.writeFileSync(configPath, newConfig);
