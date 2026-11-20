@@ -3,7 +3,7 @@ const { sticker } = require("../lib/sticker");
 
 module.exports = {
   command: ["brat"],
-  category: "tools",
+  category: "sticker",
   noPrefix: true,
   call: async (conn, m, { text, usedPrefix, command }) => {
     if (!text)
