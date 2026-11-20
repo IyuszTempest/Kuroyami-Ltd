@@ -12,7 +12,7 @@ module.exports = {
         m.chat,
         {
           image: { url: imageUrl },
-          caption: `> Aduhai Cantiknyo`,
+          caption: `Aduhai Cantiknyo`,
           contextInfo: {
             mentionedJid: [m.sender],
             forwardingScore: 999,
