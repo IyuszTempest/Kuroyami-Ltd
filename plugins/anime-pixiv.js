@@ -14,7 +14,7 @@ module.exports = {
       const { data } = await axios.get(apiUrl);
 
       if (!data || !data.status || !data.result?.results?.length) {
-        throw new Error("Artwork gak ditemukan, Senpai!");
+        throw new Error("Artwork gak ditemukan!");
       }
 
       let item = data.result.results[0];
@@ -35,7 +35,7 @@ module.exports = {
       caption += `> 🤖 *AI Generated:* ${item.aiGenerated ? "Ya" : "Bukan"}\n`;
       caption += `> 🏷️ *Tags:* ${tags}\n`;
       caption += `> 🔗 *Pixiv:* ${item.url || "-"}\n\n`;
-      caption += `_Nih artwork-nya, Senpai! Moga kamu suka!_ ✨`;
+      caption += `_Nih artwork-nya! Moga kamu suka!_ ✨`;
 
       await conn.sendMessage(
         m.chat,
@@ -47,7 +47,7 @@ module.exports = {
       );
     } catch (e) {
       console.error(e);
-      m.reply(`> ❌ Gagal ngambil artwork Pixiv: ${e.message}`);
+      m.reply(`❌ Gagal ngambil artwork Pixiv: ${e.message}`);
     }
   },
 };
