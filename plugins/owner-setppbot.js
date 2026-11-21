@@ -4,12 +4,15 @@ const {
   proto,
   generateWAMessageFromContent,
   prepareWAMessageMedia,
+  downloadMediaMessage,
 } = require("@whiskeysockets/baileys");
 
 const MAX_BYTES = 10 * 1024 * 1024;
 const IMAGE_MIME = /image\/(jpe?g|png|webp)/i;
 const REMOVE_KEYWORDS = ["hapus", "remove", "reset", "delete"];
+const DOWNLOAD_ATTEMPTS = 2;
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /* ───────────────────────── Helper ───────────────────────── */
 function resolveImage(src) {
@@ -75,27 +78,101 @@ async function toSquare(buffer) {
   }
 }
 
-async function getImageBuffer(m, text) {
+function describeError(err) {
+  const cause = err?.cause;
+  const detail = cause?.code || cause?.message;
+  return `${err?.message || String(err)}${detail ? ` (${detail})` : ""}`;
+}
+
+function buildMessageObject(m, q) {
+  if (q.fakeObj?.message) return q.fakeObj;
+  if (q === m && m.message) return { key: m.key, message: m.message };
+  if (q.msg && q.mtype) {
+    return {
+      key: {
+        remoteJid: m.chat,
+        fromMe: !!q.fromMe,
+        id: q.id,
+        participant: q.sender,
+      },
+      message: { [q.mtype]: q.msg },
+    };
+  }
+  return null;
+}
+
+async function downloadImage(conn, m, q) {
+  const errors = [];
+
+  if (typeof q.download === "function") {
+    for (let i = 0; i < DOWNLOAD_ATTEMPTS; i++) {
+      try {
+        const buf = await q.download();
+        if (buf?.length) return buf;
+        errors.push("fungsi unduh bot mengembalikan data kosong");
+      } catch (err) {
+        errors.push(describeError(err));
+      }
+      if (i < DOWNLOAD_ATTEMPTS - 1) await sleep(1500);
+    }
+  }
+
+  if (typeof downloadMediaMessage === "function") {
+    const msgObj = buildMessageObject(m, q);
+    if (msgObj) {
+      for (let i = 0; i < DOWNLOAD_ATTEMPTS; i++) {
+        try {
+          const buf = await downloadMediaMessage(
+            msgObj,
+            "buffer",
+            {},
+            { reuploadRequest: conn.updateMediaMessage },
+          );
+          if (buf?.length) return buf;
+          errors.push("Baileys mengembalikan data kosong");
+        } catch (err) {
+          errors.push(describeError(err));
+        }
+        if (i < DOWNLOAD_ATTEMPTS - 1) await sleep(1500);
+      }
+    }
+  }
+
+  console.error("[setppbot] semua jalur unduh gagal:", errors);
+  const reasons =
+    [...new Set(errors)].slice(-2).join(" | ") || "penyebab tidak diketahui";
+  throw new Error(
+    `Gagal mengunduh gambar (${reasons}).\n` +
+      `💡 Ini biasanya masalah koneksi bot ke server media WhatsApp, atau gambarnya sudah kedaluwarsa.\n` +
+      `Coba kirim ulang gambarnya, atau pakai link: \`.setppbot https://...\``,
+  );
+}
+
+async function getImageBuffer(conn, m, text) {
   const q = m.quoted || m;
-  const mime = (q.msg || q).mimetype || q.mimetype || q.mediaType || "";
+  const mime =
+    (q.msg || q).mimetype ||
+    q.mimetype ||
+    q.mediaType ||
+    (q.mtype === "imageMessage" ? "image/jpeg" : "");
 
   if (IMAGE_MIME.test(mime)) {
-    if (typeof q.download !== "function") {
-      throw new Error("Fungsi unduh media tidak tersedia di base bot ini");
-    }
-    const buf = await q.download();
-    if (!buf || !buf.length) throw new Error("Gagal mengunduh gambar dari pesan");
-    return buf;
+    return await downloadImage(conn, m, q);
   }
 
   const url = (String(text || "").match(/https?:\/\/\S+/i) || [])[0];
   if (url) {
-    const res = await axios.get(url, {
-      responseType: "arraybuffer",
-      timeout: 20000,
-      maxContentLength: MAX_BYTES,
-      maxBodyLength: MAX_BYTES,
-    });
+    let res;
+    try {
+      res = await axios.get(url, {
+        responseType: "arraybuffer",
+        timeout: 20000,
+        maxContentLength: MAX_BYTES,
+        maxBodyLength: MAX_BYTES,
+      });
+    } catch (err) {
+      throw new Error(`Gagal membuka link (${describeError(err)})`);
+    }
     const type = String(res.headers["content-type"] || "");
     if (!IMAGE_MIME.test(type)) {
       throw new Error("Link tersebut bukan gambar (JPG, PNG, atau WEBP)");
@@ -148,7 +225,9 @@ async function sendCardSafe(conn, m, { media, body, footer, buttons }) {
             },
             interactiveMessage: proto.Message.InteractiveMessage.create({
               header,
-              body: proto.Message.InteractiveMessage.Body.create({ text: body }),
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: body,
+              }),
               footer: proto.Message.InteractiveMessage.Footer.create({
                 text: footer || global.wm || "Powered by Node.js",
               }),
@@ -175,7 +254,9 @@ async function sendCardSafe(conn, m, { media, body, footer, buttons }) {
             {
               tag: "interactive",
               attrs: { type: "native_flow", v: "1" },
-              content: [{ tag: "native_flow", attrs: { v: "9", name: "mixed" } }],
+              content: [
+                { tag: "native_flow", attrs: { v: "9", name: "mixed" } },
+              ],
             },
           ],
         },
@@ -191,7 +272,6 @@ async function sendCardSafe(conn, m, { media, body, footer, buttons }) {
   }
 }
 
-
 /* ───────────────────────── Command ───────────────────────── */
 module.exports = {
   command: ["setppbot", "setbotpp", "ubahppbot", "gantippbot"],
@@ -201,7 +281,9 @@ module.exports = {
   call: async (conn, m, { text, usedPrefix, command }) => {
     const pfx = usedPrefix || ".";
     const cmd = command || "setppbot";
-    const input = String(text || "").trim().toLowerCase();
+    const input = String(text || "")
+      .trim()
+      .toLowerCase();
     const jid = botJid(conn);
 
     try {
@@ -222,7 +304,8 @@ module.exports = {
 
       let source;
       try {
-        source = await getImageBuffer(m, text);
+        await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
+        source = await getImageBuffer(conn, m, text);
       } catch (err) {
         await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
         return m.reply(`❌ *Gagal mengambil gambar:* ${err.message}`);
@@ -261,8 +344,6 @@ module.exports = {
         );
       }
 
-      await conn.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
-
       const { buffer, squared } = await toSquare(source);
 
       try {
@@ -272,7 +353,7 @@ module.exports = {
         await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
         const needLib = /sharp|jimp/i.test(String(err?.message));
         return m.reply(
-          `❌ *Gagal mengganti foto:* ${err.message}` +
+          `❌ *Gagal mengganti foto:* ${describeError(err)}` +
             (needLib
               ? `\n💡 Baileys butuh library pengolah gambar. Jalankan: \`npm i sharp\``
               : ""),
@@ -282,7 +363,7 @@ module.exports = {
       await conn.sendMessage(m.chat, { react: { text: "✅", key: m.key } });
 
       const body =
-        `╭─〔 🖼️ *FOTO PROFIL BOT DIPERBARUI* 〕\n` +
+        `╭─〔 🖼️ *PP BOT DIPERBARUI* 〕\n` +
         `│ 📐 Ukuran : ${squared ? "640×640 (persegi)" : "asli (tanpa pemotongan)"}\n` +
         `│ 📦 Berat  : ${formatSize(buffer.length)}\n` +
         `│ 🕐 Waktu  : ${formatDateTime(Date.now())}\n` +
@@ -302,8 +383,10 @@ module.exports = {
       });
     } catch (e) {
       console.error("[setppbot]", e);
-      await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } }).catch(() => {});
-      m.reply(`❌ Terjadi kesalahan: ${e.message}`);
+      await conn
+        .sendMessage(m.chat, { react: { text: "❌", key: m.key } })
+        .catch(() => {});
+      m.reply(`❌ Terjadi kesalahan: ${describeError(e)}`);
     }
   },
 };
