@@ -55,7 +55,7 @@ module.exports = {
 
             await conn.sendMessage(m.chat, {
                 image: img,
-                caption: `✅ *Thumbnail Menu Berhasil Diperbarui*\n\n🖼️ *URL Baru:* ${url}\n\n_Catatan: Jika belum berubah, silakan restart bot di panel._`
+                caption: `✅ *Thumbnail Menu Berhasil Diperbarui*\n\n🖼️ *URL Baru:* ${url}\n\n_Catatan:\n - Jika belum berubah, silakan restart bot di panel.\n - Sethumb hanya berlaku selama 24 jam aja, silahkan atur di config agar permanen`
             }, { quoted: m });
 
             await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
