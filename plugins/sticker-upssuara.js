@@ -291,7 +291,7 @@ module.exports = {
   noPrefix: true,
   call: async (conn, m, { usedPrefix, command, text, isOwner }) => {
     const pfx = usedPrefix || "";
-    const cmd = command || "ssa";
+    const cmd = command || "upssa";
     const arg = (text || "").trim().toLowerCase();
 
     if (/^(batal|cancel|hapus|reset|del)$/i.test(arg)) {
