@@ -286,7 +286,7 @@ async function sendSoundSticker(conn, m, webp, audio, directMode = false) {
 
 /* ───────────────────────── Command ───────────────────────── */
 module.exports = {
-  command: ["stikersuara", "ssa"],
+  command: ["upsstiker", "upssa"],
   category: "sticker",
   noPrefix: true,
   call: async (conn, m, { usedPrefix, command, text, isOwner }) => {
